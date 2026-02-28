@@ -25,11 +25,20 @@ export function OverviewContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/dashboard")
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+    fetch("/api/dashboard", { signal: controller.signal })
       .then((res) => (res.ok ? res.json() : Promise.reject(res)))
       .then(setData)
       .catch(() => setData(null))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        clearTimeout(timeoutId);
+        setLoading(false);
+      });
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, []);
 
   if (loading) {

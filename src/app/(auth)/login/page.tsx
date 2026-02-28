@@ -29,8 +29,9 @@ function LoginForm() {
         setLoading(false);
         return;
       }
-      router.push(callbackUrl);
-      router.refresh();
+      // Redirecionamento completo evita travamentos em produção (Vercel/serverless)
+      window.location.href = callbackUrl;
+      return;
     } catch {
       setError("Ocorreu um erro. Tente novamente.");
       setLoading(false);
