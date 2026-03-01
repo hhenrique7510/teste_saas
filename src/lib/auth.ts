@@ -1,11 +1,10 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import { compare } from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  // Sem adapter: com Credentials + JWT a sessão fica no cookie; evita chamadas extra que podem travar em serverless
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days

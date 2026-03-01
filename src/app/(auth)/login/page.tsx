@@ -18,22 +18,30 @@ function LoginForm() {
     e.preventDefault();
     setError("");
     setLoading(true);
+    const timeoutMs = 15000; // 15s
     try {
-      const res = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
+      const res = await Promise.race([
+        signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        }),
+        new Promise<null>((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), timeoutMs)
+        ),
+      ]);
       if (res?.error) {
         setError("Email ou palavra-passe incorretos.");
-        setLoading(false);
         return;
       }
-      // Redirecionamento completo evita travamentos em produção (Vercel/serverless)
       window.location.href = callbackUrl;
-      return;
-    } catch {
-      setError("Ocorreu um erro. Tente novamente.");
+    } catch (err) {
+      if (err instanceof Error && err.message === "timeout") {
+        setError("Demorou demasiado. Use a connection string Session pooler (porta 5432) na Vercel.");
+      } else {
+        setError("Erro de ligação. Tente novamente.");
+      }
+    } finally {
       setLoading(false);
     }
   }
