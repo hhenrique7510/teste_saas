@@ -17,10 +17,12 @@ Na **Vercel** → **Settings** → **Environment Variables** → `DATABASE_URL`,
   &connect_timeout=15&connection_limit=1
   ```
 
-Exemplo completo (Session pooler):
+Exemplo completo (Session pooler), com timeout de conexão e pool para reduzir risco de timeout na Vercel:
 ```
-postgresql://postgres.XXX:PASSWORD@aws-1-us-east-1.pooler.supabase.com:5432/postgres?connect_timeout=15&connection_limit=1
+postgresql://postgres.XXX:PASSWORD@aws-1-us-east-1.pooler.supabase.com:5432/postgres?connect_timeout=10&connection_limit=1&pool_timeout=5
 ```
+
+**Nota:** No plano **Hobby** a Vercel limita as funções a **10 segundos**. Se a rota `/api/auth/[...nextauth]` (login) demorar mais (cold start + BD), a função é terminada e o cliente fica à espera até ao timeout do browser. Para reduzir: use a connection string com `connect_timeout=10` e Session pooler (5432); confira os logs em **Vercel → Logs** para ver se aparece `FUNCTION_INVOCATION_TIMEOUT`.
 
 ## 2. Qual connection string usar na Vercel
 
