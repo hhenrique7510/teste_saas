@@ -20,15 +20,20 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        const log = (msg: string) => console.log(`[auth authorize] ${Date.now()} ${msg}`);
         if (!credentials?.email || !credentials?.password) return null;
-        // Select mínimo para reduzir tempo de resposta e ficar abaixo do timeout 10s (Vercel Hobby)
+        log("start findUnique");
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
           select: { id: true, email: true, name: true, image: true, passwordHash: true },
         });
+        log(`findUnique done, user=${!!user}`);
         if (!user?.passwordHash) return null;
+        log("start compare");
         const valid = await compare(credentials.password, user.passwordHash);
+        log(`compare done, valid=${valid}`);
         if (!valid) return null;
+        log("returning user");
         return {
           id: user.id,
           email: user.email,
