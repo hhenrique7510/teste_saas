@@ -51,12 +51,13 @@ export async function POST(request: Request) {
       ? { customer: user.stripeCustomerId }
       : { customer_email: session.user.email };
 
+    const baseUrl = (process.env.NEXTAUTH_URL || "").replace(/\/$/, "");
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${process.env.NEXTAUTH_URL}/dashboard/plano?success=1`,
-      cancel_url: `${process.env.NEXTAUTH_URL}/dashboard/plano?canceled=1`,
+      success_url: `${baseUrl}/dashboard/plano?success=1`,
+      cancel_url: `${baseUrl}/dashboard/plano?canceled=1`,
       ...params,
       subscription_data: {
         metadata: { userId: session.user.id },
