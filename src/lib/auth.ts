@@ -21,8 +21,10 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
+        // Select mínimo para reduzir tempo de resposta e ficar abaixo do timeout 10s (Vercel Hobby)
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
+          select: { id: true, email: true, name: true, image: true, passwordHash: true },
         });
         if (!user?.passwordHash) return null;
         const valid = await compare(credentials.password, user.passwordHash);
